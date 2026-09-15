@@ -20,6 +20,7 @@ import { ContactUsPage } from './components/ContactUsPage';
 import { KeralaLandingPage } from './pages/kerala/KeralaLandingPage';
 import { KeralaHoneymoonLandingPage } from './pages/kerala-honeymoon/KeralaHoneymoonLandingPage';
 import { KeralaFamilyLandingPage } from './pages/kerala-family/KeralaFamilyLandingPage';
+import { WhatsAppModal } from './components/WhatsAppModal';
 
 interface RouteMetadata {
   title: string;
@@ -98,6 +99,23 @@ export default function App() {
     }
     return '/';
   });
+
+  // Global WhatsApp Chat Modal state
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState<boolean>(false);
+  const [whatsAppDestination, setWhatsAppDestination] = useState<string>('Holiday Tours');
+  const [whatsAppDefaultMsg, setWhatsAppDefaultMsg] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const handleOpenWhatsApp = (e: any) => {
+      const detail = e.detail || {};
+      setWhatsAppDestination(detail.destination || 'Holiday Tours');
+      setWhatsAppDefaultMsg(detail.defaultMessage);
+      setIsWhatsAppModalOpen(true);
+    };
+
+    window.addEventListener('open-whatsapp-modal', handleOpenWhatsApp);
+    return () => window.removeEventListener('open-whatsapp-modal', handleOpenWhatsApp);
+  }, []);
 
   // Dynamically update document.title, meta description, and og:tags whenever currentPath changes
   useEffect(() => {
@@ -351,6 +369,14 @@ export default function App() {
             }}
           />
         )}
+
+        {/* Global WhatsApp Chat Modal */}
+        <WhatsAppModal
+          isOpen={isWhatsAppModalOpen}
+          onClose={() => setIsWhatsAppModalOpen(false)}
+          destinationTitle={whatsAppDestination}
+          defaultMessage={whatsAppDefaultMsg}
+        />
 
       </div>
     </ClickSpark>

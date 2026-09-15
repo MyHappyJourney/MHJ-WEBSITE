@@ -1,8 +1,8 @@
 import React from 'react';
 import { PackageItem } from '../types';
 import { Zap } from 'lucide-react';
-import { WHATSAPP_NUMBER } from '../data/tourData';
 import { WhatsAppIcon } from './WhatsAppIcon';
+import { triggerWhatsAppModal } from '../../../utils/whatsappModal';
 
 interface PackageCardProps {
   pkg: PackageItem;
@@ -11,10 +11,13 @@ interface PackageCardProps {
 }
 
 export const PackageCard: React.FC<PackageCardProps> = ({ pkg, onViewDetails, onGetQuote }) => {
-  const whatsappMsg = encodeURIComponent(
-    `Hi MyHappyJourney, I am interested in "${pkg.title}" (${pkg.durationBadge} - ₹${pkg.price.toLocaleString('en-IN')}/Adult). Please share full itinerary and best quote.`
-  );
-  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMsg}`;
+  const handleWhatsApp = (e: React.MouseEvent) => {
+    e.preventDefault();
+    triggerWhatsAppModal({
+      destination: `Kerala Family — ${pkg.title}`,
+      defaultMessage: `Hi MyHappyJourney, I am interested in "${pkg.title}" (${pkg.durationBadge} - ₹${pkg.price.toLocaleString('en-IN')}/Adult). Please share full itinerary and best quote.`,
+    });
+  };
 
   const originalPriceFormatted = pkg.originalPrice
     ? `₹${pkg.originalPrice.toLocaleString('en-IN')}`
@@ -129,16 +132,15 @@ export const PackageCard: React.FC<PackageCardProps> = ({ pkg, onViewDetails, on
 
           {/* Action CTAs: WhatsApp (English) + Get Quote in 10 Min */}
           <div className="grid grid-cols-2 gap-2 pt-1">
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full h-11 px-2 bg-[#25D366] hover:bg-[#20bd5a] active:scale-98 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none"
+            <button
+              type="button"
+              onClick={handleWhatsApp}
+              className="w-full h-11 px-2 bg-[#25D366] hover:bg-[#20bd5a] active:scale-98 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none border-none"
               id={`whatsapp-btn-${pkg.id}`}
             >
               <WhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
               <span className="whitespace-nowrap">WhatsApp</span>
-            </a>
+            </button>
 
             <button
               type="button"

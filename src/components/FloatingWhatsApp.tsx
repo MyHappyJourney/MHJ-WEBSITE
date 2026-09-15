@@ -1,9 +1,14 @@
 import React from 'react';
-import { WHATSAPP_NUMBER, WHATSAPP_DEFAULT_MSG } from '../data/tourData';
 import { WhatsAppIcon } from './WhatsAppIcon';
+import { triggerWhatsAppModal } from '../utils/whatsappModal';
 
 export const FloatingWhatsApp: React.FC = () => {
-  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_DEFAULT_MSG}`;
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    triggerWhatsAppModal({
+      destination: 'Holiday Tours',
+    });
+  };
 
   return (
     <aside
@@ -16,20 +21,19 @@ export const FloatingWhatsApp: React.FC = () => {
       </span>
 
       {/* Floating Action Button */}
-      <a
-        href={whatsappUrl}
-        target="_blank"
-        rel="noopener noreferrer"
+      <button
+        onClick={handleClick}
         id="floating-whatsapp-btn"
         aria-label="Chat on WhatsApp with MyHappyJourney"
-        className="relative flex items-center justify-center w-14 h-14 sm:w-15 sm:h-15 rounded-full bg-[#25D366] hover:bg-[#20ba59] active:scale-95 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer"
+        className="relative flex items-center justify-center w-14 h-14 sm:w-15 sm:h-15 rounded-full bg-[#25D366] hover:bg-[#20ba59] active:scale-95 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer border-none"
       >
         {/* Soft pulse animation ring */}
         <span className="absolute -inset-1 rounded-full bg-[#25D366]/35 animate-ping pointer-events-none opacity-75" />
         
         {/* WhatsApp Vector Icon */}
         <WhatsAppIcon className="w-7 h-7 sm:w-8 sm:h-8 fill-white relative z-10" />
-      </a>
+      </button>
     </aside>
   );
 };
+

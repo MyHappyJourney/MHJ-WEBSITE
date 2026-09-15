@@ -1,15 +1,14 @@
 import React from 'react';
 import { Phone, Compass } from 'lucide-react';
-import { PHONE_NUMBER, WHATSAPP_NUMBER, WHATSAPP_DEFAULT_MSG } from '../data/tourData';
+import { PHONE_NUMBER } from '../data/tourData';
 import { WhatsAppIcon } from './WhatsAppIcon';
+import { triggerWhatsAppModal } from '../utils/whatsappModal';
 
 interface StickyMobileCTAProps {
   onExploreClick?: () => void;
 }
 
 export const StickyMobileCTA: React.FC<StickyMobileCTAProps> = ({ onExploreClick }) => {
-  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_DEFAULT_MSG}`;
-
   const handleExplore = () => {
     if (onExploreClick) {
       onExploreClick();
@@ -19,6 +18,13 @@ export const StickyMobileCTA: React.FC<StickyMobileCTAProps> = ({ onExploreClick
         elem.scrollIntoView({ behavior: 'smooth' });
       }
     }
+  };
+
+  const handleWhatsApp = (e: React.MouseEvent) => {
+    e.preventDefault();
+    triggerWhatsAppModal({
+      destination: 'Holiday Tours',
+    });
   };
 
   return (
@@ -45,17 +51,16 @@ export const StickyMobileCTA: React.FC<StickyMobileCTAProps> = ({ onExploreClick
       </button>
 
       {/* 3. WHATSAPP Button */}
-      <a
-        href={whatsappUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex-1 h-11 bg-[#25D366] active:bg-[#1fbd58] text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-xs"
+      <button
+        onClick={handleWhatsApp}
+        className="flex-1 h-11 bg-[#25D366] active:bg-[#1fbd58] text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-xs cursor-pointer border-none"
         id="sticky-whatsapp-btn"
       >
         <WhatsAppIcon className="w-3.5 h-3.5 fill-white" />
         <span className="text-[11px] font-bold">WhatsApp</span>
-      </a>
+      </button>
 
     </div>
   );
 };
+

@@ -13,12 +13,12 @@ import {
 import {
   PHONE_NUMBER,
   DISPLAY_PHONE,
-  WHATSAPP_NUMBER,
   ENQUIRY_EMAIL,
   COMPANY_ADDRESS
 } from '../data/tourData';
 import { submitLeadToCRM } from '../services/leadService';
 import { WhatsAppIcon } from './WhatsAppIcon';
+import { triggerWhatsAppModal } from '../utils/whatsappModal';
 
 interface ContactUsPageProps {
   onBackToHome?: () => void;
@@ -148,12 +148,9 @@ export const ContactUsPage: React.FC<ContactUsPageProps> = ({ onBackToHome }) =>
           </a>
 
           {/* Card 2: WhatsApp */}
-          <a
-            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-              'Hi MyHappyJourney, I am looking for details regarding custom tour packages.'
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={() => triggerWhatsAppModal({ destination: 'Holiday Tours' })}
             className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.08)] hover:shadow-xl transition-all duration-200 border border-gray-100 flex flex-col items-center text-center group cursor-pointer"
           >
             <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-[#25D366] text-white flex items-center justify-center mb-3.5 group-hover:scale-105 transition-transform shadow-xs">
@@ -165,7 +162,7 @@ export const ContactUsPage: React.FC<ContactUsPageProps> = ({ onBackToHome }) =>
             <p className="text-xs sm:text-sm text-gray-500 font-medium group-hover:text-emerald-600 transition-colors">
               Chat Instantly
             </p>
-          </a>
+          </button>
 
           {/* Card 3: Email Us */}
           <a

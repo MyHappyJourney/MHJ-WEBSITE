@@ -2,8 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { ArrowRight, MapPin, Sparkles, Phone } from 'lucide-react';
 import { DOMESTIC_DESTINATIONS, DestinationCardItem } from '../data/destinations';
 import { InternationalHolidaysSection } from './InternationalHolidaysSection';
-import { WHATSAPP_NUMBER, PHONE_NUMBER, DISPLAY_PHONE } from '../data/tourData';
+import { PHONE_NUMBER, DISPLAY_PHONE } from '../data/tourData';
 import { WhatsAppIcon } from './WhatsAppIcon';
+import { triggerWhatsAppModal } from '../utils/whatsappModal';
 
 interface PackagesPageProps {
   onBackToHome: () => void;
@@ -57,10 +58,10 @@ export const PackagesPage: React.FC<PackagesPageProps> = ({
   };
 
   const handleBookOrQuote = (destName: string) => {
-    const whatsappMsg = encodeURIComponent(
-      `Hello MyHappyJourney, I am interested in custom holiday packages and pricing for ${destName}. Please share detailed day-wise plans and hotel options.`
-    );
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMsg}`, '_blank');
+    triggerWhatsAppModal({
+      destination: `${destName} Tours`,
+      defaultMessage: `Hello MyHappyJourney, I am interested in custom holiday packages and pricing for ${destName}. Please share detailed day-wise plans and hotel options.`,
+    });
   };
 
   return (
@@ -285,13 +286,14 @@ export const PackagesPage: React.FC<PackagesPageProps> = ({
               </button>
               <button
                 onClick={() => {
+                  const destName = selectedCard.name;
                   setSelectedCard(null);
-                  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-                    `Hi MyHappyJourney, please share PDF itinerary for ${selectedCard.name}.`
-                  )}`;
-                  window.open(whatsappUrl, '_blank');
+                  triggerWhatsAppModal({
+                    destination: `${destName} Tours`,
+                    defaultMessage: `Hi MyHappyJourney, please share PDF itinerary and best quotes for ${destName}.`,
+                  });
                 }}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-bold text-sm px-4 py-3.5 rounded-2xl shadow-xs"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-sm px-5 py-3.5 rounded-2xl shadow-xs cursor-pointer border-none"
               >
                 <WhatsAppIcon className="w-4 h-4 fill-white" />
                 <span>WhatsApp</span>

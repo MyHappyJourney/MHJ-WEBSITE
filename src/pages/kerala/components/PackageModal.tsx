@@ -14,8 +14,8 @@ import {
   Utensils,
   Clock
 } from 'lucide-react';
-import { WHATSAPP_NUMBER } from '../../../data/tourData';
 import { WhatsAppIcon } from './WhatsAppIcon';
+import { triggerWhatsAppModal } from '../../../utils/whatsappModal';
 
 interface PackageModalProps {
   pkg: PackageItem | null;
@@ -26,10 +26,13 @@ interface PackageModalProps {
 export const PackageModal: React.FC<PackageModalProps> = ({ pkg, onClose, onGetQuote }) => {
   if (!pkg) return null;
 
-  const whatsappMsg = encodeURIComponent(
-    `Hi MyHappyJourney, I want more details regarding the "${pkg.title}" (${pkg.durationBadge}). Please share the best quote and detailed itinerary.`
-  );
-  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMsg}`;
+  const handleWhatsApp = () => {
+    onClose();
+    triggerWhatsAppModal({
+      destination: `Kerala — ${pkg.title}`,
+      defaultMessage: `Hi MyHappyJourney, I want more details regarding the "${pkg.title}" (${pkg.durationBadge}). Please share the best quote and detailed itinerary.`,
+    });
+  };
 
   const renderInclusionIcon = (iconName: string) => {
     switch (iconName) {
@@ -213,15 +216,14 @@ export const PackageModal: React.FC<PackageModalProps> = ({ pkg, onClose, onGetQ
 
         {/* Modal Footer CTAs */}
         <div className="p-4 bg-gray-50 border-t border-gray-200 grid grid-cols-1 sm:grid-cols-2 gap-3 shrink-0">
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-extrabold rounded-xl text-center text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
+          <button
+            type="button"
+            onClick={handleWhatsApp}
+            className="w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-extrabold rounded-xl text-center text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer border-none"
           >
             <WhatsAppIcon className="w-5 h-5 fill-white" />
             <span>WhatsApp Enquiry</span>
-          </a>
+          </button>
 
           <button
             onClick={() => {
