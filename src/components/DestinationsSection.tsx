@@ -29,7 +29,7 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({ onSele
             <span>CURATED INDIAN EXPEDITIONS</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#1D1D1F] tracking-[-0.03em] leading-tight mb-3">
-            Handcrafted Signature Getaways
+            Top Domestic Destinations
           </h2>
           <p className="text-sm sm:text-base text-[#515154] font-normal leading-relaxed max-w-2xl mx-auto">
             From the serene palm-fringed canals of Kerala to misty tea highlands — each itinerary is tailored from scratch to your travel style.

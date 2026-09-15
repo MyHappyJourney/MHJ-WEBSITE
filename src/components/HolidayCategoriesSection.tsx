@@ -105,10 +105,10 @@ export const HolidayCategoriesSection: React.FC<HolidayCategoriesSectionProps> =
             DESIGNED FOR YOUR TRAVEL STYLE
           </p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#1D1D1F] tracking-[-0.03em] leading-tight mb-3">
-            Holidays Handcrafted For Every Journey
+            Holidays for Every Traveler
           </h2>
           <p className="text-sm sm:text-base text-[#515154] font-normal leading-relaxed max-w-2xl mx-auto">
-            Whether embarking on an intimate honeymoon, an enriching family holiday, or a tranquil luxury escape, our travel designers build each moment around you.
+            Whether you're planning a honeymoon, a family vacation, or a school excursion — we have the perfect itinerary.
           </p>
 
           {/* Brand Red Accent Bar */}
