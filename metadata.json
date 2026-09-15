@@ -1,0 +1,8 @@
+{
+  "name": "My Happy Journey Website ",
+  "description": "Official website for MyHappyJourney (Since 2007) offering handcrafted Kerala tour packages, deluxe houseboats, custom itineraries, and travel desk support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
