@@ -20,6 +20,7 @@ import { ContactUsPage } from './components/ContactUsPage';
 import { KeralaLandingPage } from './pages/kerala/KeralaLandingPage';
 import { KeralaHoneymoonLandingPage } from './pages/kerala-honeymoon/KeralaHoneymoonLandingPage';
 import { KeralaFamilyLandingPage } from './pages/kerala-family/KeralaFamilyLandingPage';
+import { KeralaSeniorLandingPage } from './pages/kerala-senior/KeralaSeniorLandingPage';
 import { WhatsAppModal } from './components/WhatsAppModal';
 
 interface RouteMetadata {
@@ -48,6 +49,11 @@ const ROUTE_METADATA: Record<string, RouteMetadata> = {
     description:
       'Book handcrafted Kerala family holiday tour packages with private AC cab, kid-friendly deluxe resorts, private houseboat cruise, and dedicated tour coordinator.',
   },
+  '/kerala-senior-citizen-tours': {
+    title: 'Kerala Senior Citizen Tour Packages 2026 | Relaxed Pace & Caring Support | MyHappyJourney',
+    description:
+      'Book handcrafted Kerala senior citizen tour packages with leisurely paced itineraries, ground-floor deluxe rooms, wheelchair assistance, private AC cab, and dedicated tour coordinator.',
+  },
   '/packages': {
     title: 'Tour Packages & Itineraries | MyHappyJourney',
     description:
@@ -71,10 +77,13 @@ const ROUTE_METADATA: Record<string, RouteMetadata> = {
 };
 
 export default function App() {
-  // Sync router path with window.location.pathname (/ | /kerala | /kerala-honeymoon | /kerala-family-tours | /packages | /reviews | /about-us | /contact-us)
+  // Sync router path with window.location.pathname (/ | /kerala | /kerala-honeymoon | /kerala-family-tours | /kerala-senior-citizen-tours | /packages | /reviews | /about-us | /contact-us)
   const [currentPath, setCurrentPath] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname;
+      if (path === '/kerala-senior-citizen-tours' || path.startsWith('/kerala-senior-citizen-tours')) {
+        return '/kerala-senior-citizen-tours';
+      }
       if (path === '/kerala-family-tours' || path.startsWith('/kerala-family-tours')) {
         return '/kerala-family-tours';
       }
@@ -156,7 +165,9 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname;
-      if (path === '/kerala-family-tours' || path.startsWith('/kerala-family-tours')) {
+      if (path === '/kerala-senior-citizen-tours' || path.startsWith('/kerala-senior-citizen-tours')) {
+        setCurrentPath('/kerala-senior-citizen-tours');
+      } else if (path === '/kerala-family-tours' || path.startsWith('/kerala-family-tours')) {
         setCurrentPath('/kerala-family-tours');
       } else if (path === '/kerala-honeymoon' || path.startsWith('/kerala-honeymoon')) {
         setCurrentPath('/kerala-honeymoon');
@@ -182,7 +193,9 @@ export default function App() {
   // Programmatic client navigation that pushes state to browser history
   const navigateTo = (path: string) => {
     let cleanPath = '/';
-    if (path === '/kerala-family-tours' || path.startsWith('/kerala-family-tours')) {
+    if (path === '/kerala-senior-citizen-tours' || path.startsWith('/kerala-senior-citizen-tours')) {
+      cleanPath = '/kerala-senior-citizen-tours';
+    } else if (path === '/kerala-family-tours' || path.startsWith('/kerala-family-tours')) {
       cleanPath = '/kerala-family-tours';
     } else if (path === '/kerala-honeymoon' || path.startsWith('/kerala-honeymoon')) {
       cleanPath = '/kerala-honeymoon';
@@ -207,6 +220,10 @@ export default function App() {
 
   const handleDestinationSelect = (destName: string, categoryId?: string) => {
     if (destName.toLowerCase().includes('kerala')) {
+      if (categoryId === 'senior' || categoryId === 'senior-citizen' || categoryId === 'luxury') {
+        navigateTo('/kerala-senior-citizen-tours');
+        return;
+      }
       if (categoryId === 'honeymoon' || categoryId === 'romantic') {
         navigateTo('/kerala-honeymoon');
         return;
@@ -237,7 +254,8 @@ export default function App() {
   const isDedicatedLandingPage =
     currentPath === '/kerala' ||
     currentPath === '/kerala-honeymoon' ||
-    currentPath === '/kerala-family-tours';
+    currentPath === '/kerala-family-tours' ||
+    currentPath === '/kerala-senior-citizen-tours';
 
   return (
     <ClickSpark
@@ -259,7 +277,13 @@ export default function App() {
         )}
 
         {/* 2. Route Switching */}
-        {currentPath === '/kerala-family-tours' ? (
+        {currentPath === '/kerala-senior-citizen-tours' ? (
+          <main>
+            <KeralaSeniorLandingPage
+              onBackToHome={() => navigateTo('/')}
+            />
+          </main>
+        ) : currentPath === '/kerala-family-tours' ? (
           <main>
             <KeralaFamilyLandingPage
               onBackToHome={() => navigateTo('/')}
