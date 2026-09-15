@@ -11,7 +11,7 @@ interface HolidayCategory {
 }
 
 interface HolidayCategoriesSectionProps {
-  onSelectDestination?: (destName: string) => void;
+  onSelectDestination?: (destName: string, categoryId?: string) => void;
 }
 
 export const HolidayCategoriesSection: React.FC<HolidayCategoriesSectionProps> = ({
@@ -83,9 +83,10 @@ export const HolidayCategoriesSection: React.FC<HolidayCategoriesSectionProps> =
   }, [selectedCategory]);
 
   const handleDestinationPick = (dest: DestinationCardItem) => {
+    const catId = selectedCategory?.id;
     setSelectedCategory(null);
     if (onSelectDestination) {
-      onSelectDestination(dest.name);
+      onSelectDestination(dest.name, catId);
       return;
     }
     const elem = document.getElementById('packages-section');

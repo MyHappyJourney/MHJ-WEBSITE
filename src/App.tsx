@@ -18,6 +18,8 @@ import { ReviewsPage } from './components/ReviewsPage';
 import { AboutUsPage } from './components/AboutUsPage';
 import { ContactUsPage } from './components/ContactUsPage';
 import { KeralaLandingPage } from './pages/kerala/KeralaLandingPage';
+import { KeralaHoneymoonLandingPage } from './pages/kerala-honeymoon/KeralaHoneymoonLandingPage';
+import { KeralaFamilyLandingPage } from './pages/kerala-family/KeralaFamilyLandingPage';
 
 interface RouteMetadata {
   title: string;
@@ -34,6 +36,16 @@ const ROUTE_METADATA: Record<string, RouteMetadata> = {
     title: 'Kerala Tour Packages 2026 | Munnar, Alleppey Houseboat & Wayanad | MyHappyJourney',
     description:
       'Book customized Kerala tour packages with private AC cab, dedicated driver, deluxe houseboat cruise, and handpicked 3/4/5-star hotels. Instant free quote.',
+  },
+  '/kerala-honeymoon': {
+    title: 'Kerala Honeymoon Packages 2026 | Romantic Getaways & Houseboat | MyHappyJourney',
+    description:
+      'Book handcrafted Kerala honeymoon packages with private deluxe houseboat, candlelit dinner, flower bed decoration, romantic Munnar resorts, and private AC cab.',
+  },
+  '/kerala-family-tours': {
+    title: 'Kerala Family Tour Packages 2026 | Munnar, Thekkady & Alleppey Houseboat | MyHappyJourney',
+    description:
+      'Book handcrafted Kerala family holiday tour packages with private AC cab, kid-friendly deluxe resorts, private houseboat cruise, and dedicated tour coordinator.',
   },
   '/packages': {
     title: 'Tour Packages & Itineraries | MyHappyJourney',
@@ -58,10 +70,16 @@ const ROUTE_METADATA: Record<string, RouteMetadata> = {
 };
 
 export default function App() {
-  // Sync router path with window.location.pathname (/ | /kerala | /packages | /reviews | /about-us | /contact-us)
+  // Sync router path with window.location.pathname (/ | /kerala | /kerala-honeymoon | /kerala-family-tours | /packages | /reviews | /about-us | /contact-us)
   const [currentPath, setCurrentPath] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname;
+      if (path === '/kerala-family-tours' || path.startsWith('/kerala-family-tours')) {
+        return '/kerala-family-tours';
+      }
+      if (path === '/kerala-honeymoon' || path.startsWith('/kerala-honeymoon')) {
+        return '/kerala-honeymoon';
+      }
       if (path === '/kerala' || path.startsWith('/kerala/')) {
         return '/kerala';
       }
@@ -120,7 +138,11 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname;
-      if (path === '/kerala' || path.startsWith('/kerala/')) {
+      if (path === '/kerala-family-tours' || path.startsWith('/kerala-family-tours')) {
+        setCurrentPath('/kerala-family-tours');
+      } else if (path === '/kerala-honeymoon' || path.startsWith('/kerala-honeymoon')) {
+        setCurrentPath('/kerala-honeymoon');
+      } else if (path === '/kerala' || path.startsWith('/kerala/')) {
         setCurrentPath('/kerala');
       } else if (path === '/contact-us' || path.startsWith('/contact-us/')) {
         setCurrentPath('/contact-us');
@@ -142,7 +164,11 @@ export default function App() {
   // Programmatic client navigation that pushes state to browser history
   const navigateTo = (path: string) => {
     let cleanPath = '/';
-    if (path === '/kerala' || path.startsWith('/kerala')) {
+    if (path === '/kerala-family-tours' || path.startsWith('/kerala-family-tours')) {
+      cleanPath = '/kerala-family-tours';
+    } else if (path === '/kerala-honeymoon' || path.startsWith('/kerala-honeymoon')) {
+      cleanPath = '/kerala-honeymoon';
+    } else if (path === '/kerala' || path.startsWith('/kerala')) {
       cleanPath = '/kerala';
     } else if (path === '/contact-us' || path.startsWith('/contact-us')) {
       cleanPath = '/contact-us';
@@ -161,8 +187,16 @@ export default function App() {
     }
   };
 
-  const handleDestinationSelect = (destName: string) => {
+  const handleDestinationSelect = (destName: string, categoryId?: string) => {
     if (destName.toLowerCase().includes('kerala')) {
+      if (categoryId === 'honeymoon' || categoryId === 'romantic') {
+        navigateTo('/kerala-honeymoon');
+        return;
+      }
+      if (categoryId === 'family' || categoryId === 'family-holidays') {
+        navigateTo('/kerala-family-tours');
+        return;
+      }
       navigateTo('/kerala');
       return;
     }
@@ -182,6 +216,11 @@ export default function App() {
     }
   };
 
+  const isDedicatedLandingPage =
+    currentPath === '/kerala' ||
+    currentPath === '/kerala-honeymoon' ||
+    currentPath === '/kerala-family-tours';
+
   return (
     <ClickSpark
       sparkColor="#FF4B00"
@@ -192,8 +231,8 @@ export default function App() {
     >
       <div className="min-h-screen bg-white text-gray-900 font-sans antialiased selection:bg-[#EBF2FF] selection:text-[#0B3996] pb-[70px] md:pb-0 tracking-tight">
         
-        {/* 1. Website Header Navigation (Kerala has its own specialized header) */}
-        {currentPath !== '/kerala' && (
+        {/* 1. Website Header Navigation (Dedicated landing pages have their own specialized header) */}
+        {!isDedicatedLandingPage && (
           <Header
             currentPath={currentPath}
             onNavigate={navigateTo}
@@ -201,8 +240,20 @@ export default function App() {
           />
         )}
 
-        {/* 2. Route Switching: /kerala vs /contact-us vs /about-us vs /reviews vs /packages vs / (Home) */}
-        {currentPath === '/kerala' ? (
+        {/* 2. Route Switching */}
+        {currentPath === '/kerala-family-tours' ? (
+          <main>
+            <KeralaFamilyLandingPage
+              onBackToHome={() => navigateTo('/')}
+            />
+          </main>
+        ) : currentPath === '/kerala-honeymoon' ? (
+          <main>
+            <KeralaHoneymoonLandingPage
+              onBackToHome={() => navigateTo('/')}
+            />
+          </main>
+        ) : currentPath === '/kerala' ? (
           <main>
             <KeralaLandingPage
               onBackToHome={() => navigateTo('/')}
@@ -258,8 +309,8 @@ export default function App() {
 
             {/* Holidays for Every Traveler */}
             <HolidayCategoriesSection
-              onSelectDestination={(dest) => {
-                handleDestinationSelect(dest);
+              onSelectDestination={(dest, categoryId) => {
+                handleDestinationSelect(dest, categoryId);
               }}
             />
 
@@ -284,16 +335,16 @@ export default function App() {
           </main>
         )}
 
-        {/* Website Footer (Kerala has its own specialized footer) */}
-        {currentPath !== '/kerala' && (
+        {/* Website Footer (Dedicated landing pages have their own specialized footer) */}
+        {!isDedicatedLandingPage && (
           <Footer onNavigate={navigateTo} />
         )}
 
         {/* Floating WhatsApp Button */}
         <FloatingWhatsApp />
 
-        {/* Sticky Mobile Bottom Quick Action Bar (Kerala has its own mobile CTA) */}
-        {currentPath !== '/kerala' && (
+        {/* Sticky Mobile Bottom Quick Action Bar */}
+        {!isDedicatedLandingPage && (
           <StickyMobileCTA
             onExploreClick={() => {
               navigateTo('/packages');
