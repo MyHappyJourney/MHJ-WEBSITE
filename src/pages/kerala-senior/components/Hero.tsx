@@ -28,7 +28,7 @@ export const Hero: React.FC<HeroProps> = ({ onQuoteClick, preselectedPackageId }
     <section id="hero-section" className="relative bg-slate-900 text-white overflow-hidden font-sans">
       <div className="absolute inset-0 z-0">
         <img
-          src="https://hczb7fxersozfdoh.public.blob.vercel-storage.com/hero%20image.avif"
+          src="https://hczb7fxersozfdoh.public.blob.vercel-storage.com/ravi-sangar-dfB4L6PfS4w-unsplash.jpg"
           alt="Kerala Senior Citizen Tour Backwaters"
           className="w-full h-full object-cover object-center opacity-100"
           referrerPolicy="no-referrer"
