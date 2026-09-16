@@ -64,15 +64,32 @@ export function normalizePhone(rawPhone: string): string {
 }
 
 /**
- * Standardize and sanitize lead inputs into the official 5-field CRM format
+ * Standardize and sanitize lead inputs into the official 10-field CRM format
  */
-export function formatCRMLeadPayload(data: LeadData, defaultDestination: string = 'Kerala'): BasicCRMLeadPayload {
+export function formatCRMLeadPayload(data: LeadData, defaultDestination: string = 'Kerala'): CRMLeadPayload {
   const name = (data.name || data.fullName || '').trim();
   const rawPhone = (data.phone || data.phoneNumber || '').toString();
   const phone = normalizePhone(rawPhone);
   const email = (data.email || '').trim();
   const city = (data.city || '').trim();
   const destination = (data.destination || defaultDestination).trim();
+  
+  let from_date = (data.from_date || data.travelDate || '').trim();
+  if (!from_date) {
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 14);
+    from_date = defaultDate.toISOString().split('T')[0];
+  }
+
+  const duration = (data.duration || data.packagePreference || '6 NIGHTS / 7 DAYS (6N / 7D)').trim();
+
+  const rawAdults = Number(data.adults);
+  const adults = !isNaN(rawAdults) && rawAdults >= 2 ? rawAdults : 2;
+
+  const rawChildren = Number(data.children);
+  const children = !isNaN(rawChildren) && rawChildren >= 0 ? rawChildren : 0;
+
+  const budget = (data.budget || '').trim();
 
   return {
     name,
@@ -80,6 +97,11 @@ export function formatCRMLeadPayload(data: LeadData, defaultDestination: string 
     phone,
     city,
     destination,
+    from_date,
+    duration,
+    adults,
+    children,
+    budget,
   };
 }
 

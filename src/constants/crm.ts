@@ -4,11 +4,11 @@ export interface CRMLeadPayload {
   phone: string;
   city: string;
   destination: string;
-  from_date?: string;
-  duration?: string;
-  adults?: number;
-  children?: number;
-  budget?: string;
+  from_date: string;
+  duration: string;
+  adults: number;
+  children: number;
+  budget: string;
 }
 
 /**

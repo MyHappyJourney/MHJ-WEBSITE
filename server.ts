@@ -96,7 +96,22 @@ async function startServer() {
   const handleLeadSubmission = async (req: express.Request, res: express.Response) => {
     try {
       const body = req.body || {};
-      const { name, fullName, email, phone, phoneNumber, city, destination } = body;
+      const {
+        name,
+        fullName,
+        email,
+        phone,
+        phoneNumber,
+        city,
+        destination,
+        from_date,
+        travelDate,
+        duration,
+        packagePreference,
+        adults,
+        children,
+        budget,
+      } = body;
 
       const rawName = typeof name === 'string' && name.trim() ? name.trim() : (typeof fullName === 'string' ? fullName.trim() : '');
       const rawEmail = typeof email === 'string' ? email.trim() : '';
@@ -104,6 +119,13 @@ async function startServer() {
       const cleanPhone = normalizeIndianPhone(rawPhoneStr);
       const rawCity = typeof city === 'string' ? city.trim() : '';
       const rawDestination = typeof destination === 'string' && destination.trim() ? destination.trim() : 'Kerala';
+
+      const rawFromDate = typeof from_date === 'string' && from_date.trim() ? from_date.trim() : (typeof travelDate === 'string' ? travelDate.trim() : '');
+      const rawDuration = typeof duration === 'string' && duration.trim() ? duration.trim() : (typeof packagePreference === 'string' ? packagePreference.trim() : '');
+      
+      const adultsNum = typeof adults === 'number' ? adults : Number(adults);
+      const childrenNum = typeof children === 'number' ? children : (children !== undefined && children !== '' && children !== null ? Number(children) : 0);
+      const rawBudget = typeof budget === 'string' ? budget.trim() : '';
 
       const validationErrors: Record<string, string> = {};
 
@@ -128,6 +150,23 @@ async function startServer() {
         validationErrors.destination = 'Please specify a destination or tour package.';
       }
 
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!rawFromDate || !dateRegex.test(rawFromDate)) {
+        validationErrors.from_date = 'Please provide a valid travel date (YYYY-MM-DD).';
+      }
+
+      if (!rawDuration) {
+        validationErrors.duration = 'Please specify a tour duration.';
+      }
+
+      if (isNaN(adultsNum) || adultsNum < 2) {
+        validationErrors.adults = 'Number of adults must be at least 2.';
+      }
+
+      if (isNaN(childrenNum) || childrenNum < 0) {
+        validationErrors.children = 'Number of children cannot be negative.';
+      }
+
       if (Object.keys(validationErrors).length > 0) {
         return res.status(400).json({
           ok: false,
@@ -137,13 +176,18 @@ async function startServer() {
         });
       }
 
-      // Build 5-field basic CRM Payload
+      // Build Extended CRM Payload
       const crmPayload = {
         name: rawName,
         email: rawEmail,
         phone: cleanPhone,
         city: rawCity,
         destination: rawDestination,
+        from_date: rawFromDate,
+        duration: rawDuration,
+        adults: adultsNum,
+        children: childrenNum,
+        budget: rawBudget,
       };
 
       const crmUrl =
