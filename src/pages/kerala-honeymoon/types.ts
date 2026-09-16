@@ -45,9 +45,12 @@ export interface LeadFormData {
   phone: string;
   email?: string;
   city?: string;
-  travelDate: string;
-  adults: number;
-  children: number;
+  destination?: string;
+  travelDate?: string;
+  from_date?: string;
+  duration?: string;
+  adults?: number;
+  children?: number;
   budget?: string;
   packagePreference?: string;
   notes?: string;

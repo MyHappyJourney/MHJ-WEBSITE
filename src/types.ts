@@ -43,11 +43,14 @@ export interface LeadFormData {
   phone: string;
   email?: string;
   city?: string;
-  travelDate: string;
+  destination?: string;
+  travelDate?: string;
+  from_date?: string;
+  duration?: string;
+  packagePreference?: string;
   adults: number;
   children: number;
   budget?: string;
-  packagePreference?: string;
   notes?: string;
 }
 

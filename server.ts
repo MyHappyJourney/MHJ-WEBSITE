@@ -12,179 +12,234 @@ async function startServer() {
 
   // API health check
   app.get("/api/health", (req, res) => {
-    res.json({ status: "ok" });
+    res.json({
+      status: "ok",
+      crm_configured: !!process.env.CRM_LEAD_API_KEY,
+      crm_url: process.env.CRM_LEAD_API_URL || 'https://www.myhappyjourney.co.in/controller/external_website_lead/external_lead_receiver.php',
+    });
   });
 
-  // CRM Lead Submission Endpoint
-  app.post("/api/lead", async (req, res) => {
+  // Diagnostic Endpoint for Testing CRM (supports GET and POST)
+  const handleCrmDiagnostic = async (req: express.Request, res: express.Response) => {
+    const crmUrl =
+      process.env.CRM_LEAD_API_URL ||
+      'https://www.myhappyjourney.co.in/controller/external_website_lead/external_lead_receiver.php';
+    const crmApiKey = process.env.CRM_LEAD_API_KEY || '';
+
+    const testPayload = req.body && Object.keys(req.body).length > 0 ? req.body : {
+      name: "Karthik",
+      email: "brrealestates@gmail.com",
+      phone: "8217873708",
+      city: "Bangalore",
+      destination: "Kerala"
+    };
+
+    console.log('[CRM Diagnostic] Testing CRM connection to:', crmUrl);
+    console.log('[CRM Diagnostic] Has API Key configured:', !!crmApiKey);
+
     try {
-      const {
-        fullName,
-        phoneNumber,
-        email,
-        destination,
-        travelDate,
-        ticketBooked,
-        adults,
-        children,
-        budget,
-        notes,
-        source = "Website - Plan Your Dream Trip Today",
-      } = req.body;
-
-      if (!fullName || !phoneNumber) {
-        return res.status(400).json({
-          success: false,
-          error: "Full name and phone number are required.",
-        });
-      }
-
-      const crmApiUrl =
-        process.env.ITOURS_API_URL ||
-        "https://www.myhappyjourney.co.in/controller/external_website_lead/external_lead_receiver.php";
-      const crmApiKey = process.env.ITOURS_API_KEY || "";
-
-      // Construct standard payload for iTours CRM / External Lead Receiver
-      const leadPayload = {
-        api_key: crmApiKey,
-        name: fullName,
-        phone: phoneNumber,
-        email: email || "",
-        destination: destination || "Kerala",
-        travel_date: travelDate || "",
-        tickets_booked: ticketBooked || "",
-        adults: adults || "2",
-        children: children || "0",
-        budget: budget || "",
-        notes: notes || `Inquiry for ${destination || "Kerala"}. Tickets booked: ${ticketBooked || "Undecided"}`,
-        source: source,
-        created_at: new Date().toISOString(),
-      };
-
-      console.log("[CRM Lead Submission] Forwarding lead to CRM:", {
-        url: crmApiUrl,
-        name: fullName,
-        phone: phoneNumber,
-        destination,
+      const response = await fetch(crmUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': crmApiKey,
+        },
+        body: JSON.stringify(testPayload),
       });
 
-      let crmResponseStatus = null;
-      let crmResponseBody = null;
-
+      const status = response.status;
+      let body: any = null;
       try {
-        const fetchResponse = await fetch(crmApiUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json, text/plain, */*",
-          },
-          body: JSON.stringify(leadPayload),
-        });
-
-        crmResponseStatus = fetchResponse.status;
-        crmResponseBody = await fetchResponse.text();
-
-        console.log("[CRM Lead Submission] CRM response:", {
-          status: crmResponseStatus,
-          body: crmResponseBody.substring(0, 300),
-        });
-      } catch (err: any) {
-        console.warn(
-          "[CRM Lead Submission] CRM webhook dispatch error (logging lead securely):",
-          err.message
-        );
-      }
-
-      // Always respond with success to the client once recorded
-      return res.status(200).json({
-        success: true,
-        message: "Lead successfully recorded and sent to travel specialist.",
-        crmStatus: crmResponseStatus,
-      });
-    } catch (error: any) {
-      console.error("[CRM Lead Error]:", error);
-      return res.status(500).json({
-        success: false,
-        error: "Internal server error while processing inquiry.",
-      });
-    }
-  });
-
-  // Kerala Landing Page /api/leads endpoint
-  app.post("/api/leads", async (req, res) => {
-    try {
-      const {
-        name,
-        email,
-        phone,
-        city,
-        destination = "Kerala",
-        from_date,
-        duration,
-        adults = 2,
-        children = 0,
-        budget,
-      } = req.body;
-
-      if (!name || !phone) {
-        return res.status(400).json({
-          success: false,
-          error: "Name and phone number are required.",
-        });
-      }
-
-      const crmApiUrl =
-        process.env.ITOURS_API_URL ||
-        "https://www.myhappyjourney.co.in/controller/external_website_lead/external_lead_receiver.php";
-      const crmApiKey = process.env.ITOURS_API_KEY || "";
-
-      const leadPayload = {
-        api_key: crmApiKey,
-        name: name,
-        phone: phone,
-        email: email || "",
-        destination: destination,
-        city: city || "",
-        travel_date: from_date || "",
-        duration: duration || "Kerala Tour Package",
-        adults: adults,
-        children: children,
-        budget: budget || "",
-        notes: `Kerala landing page lead. City: ${city || "N/A"}. Duration: ${duration || "N/A"}.`,
-        source: "Landing Page MHJ - Kerala",
-        created_at: new Date().toISOString(),
-      };
-
-      let crmStatus = "saved";
-      try {
-        const fetchResponse = await fetch(crmApiUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json, text/plain, */*",
-          },
-          body: JSON.stringify(leadPayload),
-        });
-        if (!fetchResponse.ok) {
-          console.warn("[Kerala Lead] CRM status:", fetchResponse.status);
-        }
-      } catch (err: any) {
-        console.warn("[Kerala Lead] CRM dispatch notice:", err.message);
+        body = await response.json();
+      } catch {
+        body = null;
       }
 
       return res.status(200).json({
-        success: true,
-        crmStatus: crmStatus,
-        message: "Enquiry received successfully",
+        tested_url: crmUrl,
+        has_api_key: !!crmApiKey,
+        api_key_preview: crmApiKey ? `${crmApiKey.slice(0, 4)}...` : 'NOT_SET',
+        payload_sent: testPayload,
+        crm_http_status: status,
+        crm_response_json: body,
+        crm_ok: body?.ok === true,
+        crm_enquiry_id: body?.enquiry_id || null,
       });
     } catch (err: any) {
-      console.error("[Kerala Leads Error]:", err);
       return res.status(500).json({
-        success: false,
-        error: err.message,
+        tested_url: crmUrl,
+        has_api_key: !!crmApiKey,
+        error: err?.message || String(err),
       });
     }
-  });
+  };
+
+  app.get("/api/crm-diagnostic", handleCrmDiagnostic);
+  app.post("/api/crm-diagnostic", handleCrmDiagnostic);
+
+  // Phone normalization helper
+  const normalizeIndianPhone = (rawPhone: string): string => {
+    const digits = rawPhone.replace(/\D/g, '');
+    if (digits.length === 12 && digits.startsWith('91')) {
+      return digits.slice(2);
+    }
+    if (digits.length === 11 && digits.startsWith('0')) {
+      return digits.slice(1);
+    }
+    if (digits.length > 10) {
+      return digits.slice(-10);
+    }
+    return digits;
+  };
+
+  // Unified CRM Lead Handler Helper
+  const handleLeadSubmission = async (req: express.Request, res: express.Response) => {
+    try {
+      const body = req.body || {};
+      const { name, fullName, email, phone, phoneNumber, city, destination } = body;
+
+      const rawName = typeof name === 'string' && name.trim() ? name.trim() : (typeof fullName === 'string' ? fullName.trim() : '');
+      const rawEmail = typeof email === 'string' ? email.trim() : '';
+      const rawPhoneStr = typeof phone === 'string' ? phone : (typeof phoneNumber === 'string' ? phoneNumber : (phone ? String(phone) : ''));
+      const cleanPhone = normalizeIndianPhone(rawPhoneStr);
+      const rawCity = typeof city === 'string' ? city.trim() : '';
+      const rawDestination = typeof destination === 'string' && destination.trim() ? destination.trim() : 'Kerala';
+
+      const validationErrors: Record<string, string> = {};
+
+      if (!rawName || rawName.length < 2 || rawName.length > 100) {
+        validationErrors.name = 'Please provide a valid name (2-100 characters).';
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!rawEmail || !emailRegex.test(rawEmail) || rawEmail.length > 150) {
+        validationErrors.email = 'Please provide a valid email address.';
+      }
+
+      if (!cleanPhone || cleanPhone.length !== 10) {
+        validationErrors.phone = 'Please provide a valid 10-digit mobile phone number.';
+      }
+
+      if (!rawCity || rawCity.length < 2 || rawCity.length > 100) {
+        validationErrors.city = 'Please provide your departure city.';
+      }
+
+      if (!rawDestination || rawDestination.length < 2 || rawDestination.length > 100) {
+        validationErrors.destination = 'Please specify a destination or tour package.';
+      }
+
+      if (Object.keys(validationErrors).length > 0) {
+        return res.status(400).json({
+          ok: false,
+          error: 'validation_failed',
+          message: 'Please complete all required fields.',
+          fields: validationErrors,
+        });
+      }
+
+      // Build 5-field basic CRM Payload
+      const crmPayload = {
+        name: rawName,
+        email: rawEmail,
+        phone: cleanPhone,
+        city: rawCity,
+        destination: rawDestination,
+      };
+
+      const crmUrl =
+        process.env.CRM_LEAD_API_URL ||
+        'https://www.myhappyjourney.co.in/controller/external_website_lead/external_lead_receiver.php';
+      const crmApiKey = process.env.CRM_LEAD_API_KEY || '';
+
+      if (!crmApiKey) {
+        console.error('[CRM Error] CRM_LEAD_API_KEY is not set in environment variables!');
+      }
+
+      console.log('[CRM] Request received');
+      console.log('[CRM] Sending lead to CRM');
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      let crmResponse: Response;
+      try {
+        crmResponse = await fetch(crmUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': crmApiKey,
+          },
+          body: JSON.stringify(crmPayload),
+          signal: controller.signal,
+        });
+      } catch (fetchErr: any) {
+        clearTimeout(timeoutId);
+        console.error('[CRM] Network or timeout failure during CRM request');
+        return res.status(502).json({
+          ok: false,
+          error: 'network_error',
+          message: "Unable to submit enquiry to CRM right now. Please try again or contact us via WhatsApp.",
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      const crmStatus = crmResponse.status;
+      let crmResult: any = null;
+
+      try {
+        crmResult = await crmResponse.json();
+      } catch {
+        crmResult = null;
+      }
+
+      console.log('[CRM] CRM response status:', crmStatus);
+      console.log('[CRM] CRM response ok:', crmResult?.ok === true);
+
+      if (crmStatus === 200 && crmResult && crmResult.ok === true) {
+        return res.status(200).json({
+          ok: true,
+          enquiry_id: crmResult.enquiry_id || null,
+          assigned_emp_id: crmResult.assigned_emp_id || null,
+          message: crmResult.message || 'Lead saved in CRM.',
+        });
+      }
+
+      if (crmStatus === 422) {
+        return res.status(422).json({
+          ok: false,
+          error: 'validation_failed',
+          message: crmResult?.message || 'The submitted details could not be validated by CRM.',
+          fields: crmResult?.fields || undefined,
+        });
+      }
+
+      if (crmStatus === 401) {
+        return res.status(500).json({
+          ok: false,
+          error: 'crm_auth_error',
+          message: "Unable to submit enquiry to CRM. Please try again or contact us via WhatsApp.",
+        });
+      }
+
+      return res.status(500).json({
+        ok: false,
+        error: 'crm_error',
+        message: crmResult?.message || "Unable to submit enquiry to CRM. Please try again or contact us via WhatsApp.",
+      });
+    } catch (err: any) {
+      console.error('[CRM Handler Exception]:', err?.message || err);
+      return res.status(500).json({
+        ok: false,
+        error: 'server_error',
+        message: "Unable to submit enquiry to CRM. Please try again or contact us via WhatsApp.",
+      });
+    }
+  };
+
+  // Unified Lead Submission Endpoint
+  app.post('/api/leads', handleLeadSubmission);
+  app.post('/api/lead', handleLeadSubmission);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {

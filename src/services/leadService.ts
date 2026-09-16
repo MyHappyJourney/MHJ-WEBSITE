@@ -1,10 +1,17 @@
+import { CRMLeadPayload } from '../constants/crm';
+
 export interface LeadData {
-  fullName: string;
-  phoneNumber: string;
+  fullName?: string;
+  name?: string;
+  phoneNumber?: string;
+  phone?: string;
   email?: string;
+  city?: string;
   destination?: string;
   travelDate?: string;
-  ticketBooked?: 'yes' | 'no' | '';
+  from_date?: string;
+  duration?: string;
+  packagePreference?: string;
   adults?: string | number;
   children?: string | number;
   budget?: string;
@@ -12,92 +19,145 @@ export interface LeadData {
   source?: string;
 }
 
-export interface LeadResponse {
-  success: boolean;
-  message?: string;
-  error?: string;
-  crmStatus?: number | null;
+export interface BasicCRMLeadPayload {
+  name: string;
+  email: string;
+  phone: string;
+  city: string;
+  destination: string;
 }
 
-/**
- * Submits lead data to the server-side proxy endpoint `/api/lead`,
- * which securely integrates with iTours CRM (ITOURS_API_URL and ITOURS_API_KEY).
- */
-export async function submitLeadToCRM(data: LeadData): Promise<LeadResponse> {
-  try {
-    const response = await fetch('/api/lead', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    const result = await response.json();
-    return result;
-  } catch (error: any) {
-    console.error('Failed to submit lead to CRM:', error);
-    // Return gracefully so the UI still displays the confirmation and gives user WhatsApp option
-    return {
-      success: true,
-      message: 'Lead recorded locally and sent to specialists.',
-    };
-  }
+export interface LeadResponse {
+  success: boolean;
+  ok?: boolean;
+  enquiry_id?: number | string | null;
+  message?: string;
+  error?: string;
+  fields?: Record<string, string>;
 }
 
 export interface LeadSubmissionResult {
   success: boolean;
+  ok?: boolean;
   message: string;
   leadId?: string;
-  crmStatus?: string;
+  enquiry_id?: number | string | null;
   error?: string;
+  fields?: Record<string, string>;
 }
 
 /**
-  * Reusable submitLead for Kerala Landing Page components
-  */
-export async function submitLead(formData: any): Promise<LeadSubmissionResult> {
-  const cleanPhone = (formData.phone || '').replace(/\D/g, '');
-  const cleanEmail = (formData.email || '').trim();
-  const cleanCity = (formData.city || '').trim();
-  const leadId = `MHJ-${Date.now().toString().slice(-6)}`;
+ * Normalizes Indian phone numbers into a 10-digit clean string.
+ */
+export function normalizePhone(rawPhone: string): string {
+  const digits = rawPhone.replace(/\D/g, '');
+  if (digits.length === 12 && digits.startsWith('91')) {
+    return digits.slice(2);
+  }
+  if (digits.length === 11 && digits.startsWith('0')) {
+    return digits.slice(1);
+  }
+  if (digits.length > 10) {
+    return digits.slice(-10);
+  }
+  return digits;
+}
+
+/**
+ * Standardize and sanitize lead inputs into the official 5-field CRM format
+ */
+export function formatCRMLeadPayload(data: LeadData, defaultDestination: string = 'Kerala'): BasicCRMLeadPayload {
+  const name = (data.name || data.fullName || '').trim();
+  const rawPhone = (data.phone || data.phoneNumber || '').toString();
+  const phone = normalizePhone(rawPhone);
+  const email = (data.email || '').trim();
+  const city = (data.city || '').trim();
+  const destination = (data.destination || defaultDestination).trim();
+
+  return {
+    name,
+    email,
+    phone,
+    city,
+    destination,
+  };
+}
+
+/**
+ * Submits lead data to the unified server-side `/api/leads` endpoint.
+ */
+export async function submitLeadToCRM(data: LeadData, defaultDestination: string = 'Kerala'): Promise<LeadResponse> {
+  const payload = formatCRMLeadPayload(data, defaultDestination);
 
   try {
-    const res = await fetch('/api/leads', {
+    const response = await fetch('/api/leads', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        name: (formData.name || '').trim(),
-        email: cleanEmail,
-        phone: cleanPhone,
-        city: cleanCity,
-        destination: 'Kerala',
-        from_date: formData.travelDate || '',
-        duration: formData.packagePreference || 'Kerala Tour Package',
-        adults: Number(formData.adults) || 2,
-        children: Number(formData.children) || 0,
-        budget: formData.budget || '',
-      }),
+      body: JSON.stringify(payload),
     });
 
-    const result = await res.json().catch(() => null);
+    const result = await response.json().catch(() => null);
+
+    if (response.ok && result?.ok === true) {
+      return {
+        success: true,
+        ok: true,
+        enquiry_id: result.enquiry_id || null,
+        message: result.message || 'Thank you! Your enquiry has been received. Our travel expert will contact you shortly.',
+      };
+    }
+
+    if (response.status === 422 && result?.fields) {
+      return {
+        success: false,
+        ok: false,
+        error: result.message || 'Please check your submitted details.',
+        message: result.message || 'Please check your submitted details.',
+        fields: result.fields,
+      };
+    }
 
     return {
-      success: true,
-      crmStatus: 'saved',
-      message: `Thank you, ${formData.name}! Your enquiry has been received. Our Kerala travel expert will contact you shortly.`,
-      leadId,
+      success: false,
+      ok: false,
+      error: result?.error || 'crm_error',
+      message: result?.message || "Sorry, we couldn't submit your enquiry right now. Please try again or contact us on WhatsApp.",
     };
-  } catch (err: any) {
-    console.error('submitLead error:', err);
+  } catch (error: any) {
+    console.error('Lead submission request failed:', error);
     return {
-      success: true,
-      crmStatus: 'saved',
-      message: `Thank you, ${formData.name}! Your enquiry has been received.`,
-      leadId,
+      success: false,
+      ok: false,
+      error: 'network_error',
+      message: "Sorry, we couldn't submit your enquiry right now. Please try again or contact us on WhatsApp.",
     };
   }
 }
 
+/**
+ * Reusable submitLead for Kerala Landing Page components
+ */
+export async function submitLead(formData: LeadData, defaultDestination: string = 'Kerala'): Promise<LeadSubmissionResult> {
+  const crmRes = await submitLeadToCRM(formData, defaultDestination);
+
+  if (crmRes.success && crmRes.ok) {
+    const leadId = crmRes.enquiry_id ? `MHJ-${crmRes.enquiry_id}` : `MHJ-${Date.now().toString().slice(-6)}`;
+    return {
+      success: true,
+      ok: true,
+      enquiry_id: crmRes.enquiry_id || null,
+      leadId,
+      message: `Thank you, ${formData.name || formData.fullName || 'Traveler'}! Your enquiry has been received (Ref: ${leadId}). Our travel expert will contact you shortly.`,
+    };
+  }
+
+  return {
+    success: false,
+    ok: false,
+    message: crmRes.message || "Sorry, we couldn't submit your enquiry right now. Please try again or contact us on WhatsApp.",
+    error: crmRes.error,
+    fields: crmRes.fields,
+  };
+}
