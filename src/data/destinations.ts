@@ -24,6 +24,16 @@ export const DOMESTIC_DESTINATIONS: DestinationCardItem[] = [
     price: 15999,
     image: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=90',
   },
+  {
+    id: 'karnataka',
+    name: 'Karnataka',
+    subtitle: 'Coorg Coffee Hills, Mysuru Palaces & Hampi Heritage',
+    tag: 'Popular',
+    region: 'south',
+    duration: '4N - 7N',
+    price: 14999,
+    image: 'https://images.unsplash.com/photo-1600100397608-f010e423b971?auto=format&fit=crop&w=1200&q=90',
+  },
 ];
 
 export interface InternationalDestinationItem {
