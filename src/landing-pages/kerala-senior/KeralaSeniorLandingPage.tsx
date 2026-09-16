@@ -167,3 +167,5 @@ export const KeralaSeniorLandingPage: React.FC<KeralaSeniorLandingPageProps> = (
 }
 
 export default KeralaSeniorLandingPage;
+
+// synchronized export

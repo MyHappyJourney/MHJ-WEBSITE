@@ -115,3 +115,5 @@ export const TrustStrip: React.FC = () => {
 };
 
 export default TrustStrip;
+
+// synchronized export

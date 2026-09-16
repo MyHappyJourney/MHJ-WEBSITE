@@ -144,3 +144,5 @@ export const Hero: React.FC<HeroProps> = ({ onQuoteClick, preselectedPackageId }
 };
 
 export default Hero;
+
+// synchronized export

@@ -164,3 +164,5 @@ export const KeralaHoneymoonLandingPage: React.FC<KeralaHoneymoonLandingPageProp
 }
 
 export default KeralaHoneymoonLandingPage;
+
+// synchronized export

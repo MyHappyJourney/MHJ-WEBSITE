@@ -157,3 +157,5 @@ export const KeralaLandingPage: React.FC<KeralaLandingPageProps> = ({ onBackToHo
 };
 
 export default KeralaLandingPage;
+
+// synchronized export
