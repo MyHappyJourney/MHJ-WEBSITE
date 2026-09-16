@@ -67,6 +67,8 @@ export const WhatsAppModal: React.FC<WhatsAppModalProps> = ({
     const cleanPhone = phone.replace(/\D/g, '');
     const cleanCity = city.trim();
 
+    const trimmedDate = travelDate.trim();
+
     if (!trimmedName) {
       setError('Please enter your name.');
       return;
@@ -82,30 +84,46 @@ export const WhatsAppModal: React.FC<WhatsAppModalProps> = ({
       return;
     }
 
+    if (!trimmedDate) {
+      setError('Please select your travel date.');
+      return;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (trimmedDate < todayStr) {
+      setError('Travel date cannot be in the past.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       // 1. Submit lead to CRM via server-side /api/leads
-      await submitLeadToCRM({
+      const result = await submitLeadToCRM({
         name: trimmedName,
         phone: cleanPhone,
         email: `${cleanPhone}@guest.myhappyjourney.co.in`,
         city: cleanCity,
         destination: destination || destinationTitle || 'Kerala',
-        from_date: travelDate || undefined,
+        from_date: trimmedDate,
         duration: '6 NIGHTS / 7 DAYS (6N / 7D)',
         adults: 2,
         children: 0,
+        budget: '',
       });
+
+      if (!result.success || !result.ok) {
+        setError(result.message || 'Unable to submit enquiry to CRM. Please try again.');
+        setIsSubmitting(false);
+        return;
+      }
 
       // 2. Build personalized WhatsApp URL
       const customMsg = defaultMessage
         ? defaultMessage
         : `Hello MyHappyJourney Team!\n\nI am interested in holiday packages for ${
             destination || destinationTitle
-          }.\n\nName: ${trimmedName}\nPhone: ${cleanPhone}\nDeparture City: ${cleanCity}${
-            travelDate ? `\nTravel Date: ${travelDate}` : ''
-          }\n\nPlease share customized itinerary and best quote.`;
+          }.\n\nName: ${trimmedName}\nPhone: ${cleanPhone}\nDeparture City: ${cleanCity}\nTravel Date: ${trimmedDate}\n\nPlease share customized itinerary and best quote.`;
 
       const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(customMsg)}`;
 
@@ -121,10 +139,10 @@ export const WhatsAppModal: React.FC<WhatsAppModalProps> = ({
         setTravelDate('');
         onClose();
       }, 400);
-    } catch (err) {
+    } catch (err: any) {
       console.error('WhatsApp modal submission error:', err);
+      setError('An error occurred submitting your lead. Please try again.');
       setIsSubmitting(false);
-      onClose();
     }
   };
 
@@ -267,10 +285,12 @@ export const WhatsAppModal: React.FC<WhatsAppModalProps> = ({
 
               <div>
                 <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-                  Travel Date
+                  Travel Date <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
+                  required
+                  min={new Date().toISOString().split('T')[0]}
                   value={travelDate}
                   onChange={(e) => setTravelDate(e.target.value)}
                   className="w-full px-2 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-[#25D366]"

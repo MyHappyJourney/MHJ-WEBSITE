@@ -72,6 +72,20 @@ export const ContactUsPage: React.FC<ContactUsPageProps> = ({ onBackToHome }) =>
       setErrorMsg('Please select your preferred destination.');
       return;
     }
+    const trimmedDate = travelDate.trim();
+    if (!trimmedDate) {
+      setErrorMsg('Please select your travel date.');
+      return;
+    }
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (trimmedDate < todayStr) {
+      setErrorMsg('Travel date cannot be in the past.');
+      return;
+    }
+    if (adults < 2) {
+      setErrorMsg('Number of adults must be at least 2.');
+      return;
+    }
 
     setErrorMsg(null);
     setIsSubmitting(true);

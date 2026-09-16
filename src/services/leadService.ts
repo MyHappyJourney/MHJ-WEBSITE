@@ -74,12 +74,7 @@ export function formatCRMLeadPayload(data: LeadData, defaultDestination: string 
   const city = (data.city || '').trim();
   const destination = (data.destination || defaultDestination).trim();
   
-  let from_date = (data.from_date || data.travelDate || '').trim();
-  if (!from_date) {
-    const defaultDate = new Date();
-    defaultDate.setDate(defaultDate.getDate() + 14);
-    from_date = defaultDate.toISOString().split('T')[0];
-  }
+  const from_date = (data.from_date || data.travelDate || '').trim();
 
   const duration = (data.duration || data.packagePreference || '6 NIGHTS / 7 DAYS (6N / 7D)').trim();
 

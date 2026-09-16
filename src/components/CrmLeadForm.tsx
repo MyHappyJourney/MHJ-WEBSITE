@@ -20,6 +20,7 @@ import {
   BUDGET_OPTIONS,
   TOP_DEPARTURE_CITIES,
   KERALA_DURATION_OPTIONS,
+  DESTINATION_OPTIONS,
 } from '../constants/crm';
 import { WHATSAPP_NUMBER } from '../data/tourData';
 import { WhatsAppIcon } from '../pages/kerala/components/WhatsAppIcon';
@@ -27,7 +28,9 @@ import { WhatsAppIcon } from '../pages/kerala/components/WhatsAppIcon';
 export interface CrmLeadFormProps {
   destination: string;
   durations?: string[];
+  durationOptions?: string[];
   selectedDuration?: string;
+  isDestinationSelectable?: boolean;
   formTitle?: string;
   formSubtitle?: string;
   submitButtonText?: string;
@@ -37,9 +40,11 @@ export interface CrmLeadFormProps {
 }
 
 export const CrmLeadForm: React.FC<CrmLeadFormProps> = ({
-  destination,
-  durations = KERALA_DURATION_OPTIONS,
+  destination: initialDestinationProp,
+  durations,
+  durationOptions,
   selectedDuration,
+  isDestinationSelectable = false,
   formTitle = 'Request Your Custom Kerala Tour Quote',
   formSubtitle = 'Instant price estimate • 100% Customized Itinerary • No Hidden Charges',
   submitButtonText = 'Get Free Kerala Quote',
@@ -47,15 +52,23 @@ export const CrmLeadForm: React.FC<CrmLeadFormProps> = ({
   onSuccess,
   isModal = false,
 }) => {
+  const activeDurations =
+    durationOptions && durationOptions.length > 0
+      ? durationOptions
+      : durations && durations.length > 0
+      ? durations
+      : KERALA_DURATION_OPTIONS;
+
   const initialDuration =
-    selectedDuration && durations.includes(selectedDuration)
+    selectedDuration && activeDurations.includes(selectedDuration)
       ? selectedDuration
-      : durations[2] || durations[0] || '6 NIGHTS / 7 DAYS (6N / 7D)';
+      : activeDurations[0] || '6 NIGHTS / 7 DAYS (6N / 7D)';
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('');
+  const [destination, setDestination] = useState(initialDestinationProp || 'Kerala');
   const [fromDate, setFromDate] = useState('');
   const [duration, setDuration] = useState(initialDuration);
   const [adults, setAdults] = useState<number>(2);
@@ -67,12 +80,20 @@ export const CrmLeadForm: React.FC<CrmLeadFormProps> = ({
   const [enquiryId, setEnquiryId] = useState<string | number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Update duration if selectedDuration prop changes
+  // Sync props if changed
   useEffect(() => {
-    if (selectedDuration && durations.includes(selectedDuration)) {
-      setDuration(selectedDuration);
+    if (initialDestinationProp) {
+      setDestination(initialDestinationProp);
     }
-  }, [selectedDuration, durations]);
+  }, [initialDestinationProp]);
+
+  useEffect(() => {
+    if (selectedDuration && activeDurations.includes(selectedDuration)) {
+      setDuration(selectedDuration);
+    } else if (!activeDurations.includes(duration)) {
+      setDuration(activeDurations[0] || '6 NIGHTS / 7 DAYS (6N / 7D)');
+    }
+  }, [selectedDuration, activeDurations]);
 
   // Adults stepper handlers (Min 2, Max 20)
   const handleDecrementAdults = (e: React.MouseEvent) => {
@@ -98,6 +119,7 @@ export const CrmLeadForm: React.FC<CrmLeadFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setErrorMessage(null);
 
     // Validation
@@ -124,6 +146,33 @@ export const CrmLeadForm: React.FC<CrmLeadFormProps> = ({
       return;
     }
 
+    const trimmedDate = fromDate.trim();
+    if (!trimmedDate) {
+      setErrorMessage('Please select your travel date.');
+      return;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (trimmedDate < todayStr) {
+      setErrorMessage('Travel date cannot be in the past.');
+      return;
+    }
+
+    if (!duration.trim()) {
+      setErrorMessage('Please select a tour duration.');
+      return;
+    }
+
+    if (adults < 2) {
+      setErrorMessage('Number of adults must be at least 2.');
+      return;
+    }
+
+    if (children < 0) {
+      setErrorMessage('Number of children cannot be negative.');
+      return;
+    }
+
     // Construct Exact CRM payload
     const crmPayload = {
       name: trimmedName,
@@ -131,7 +180,7 @@ export const CrmLeadForm: React.FC<CrmLeadFormProps> = ({
       phone: cleanPhone,
       city: city.trim(),
       destination: destination.trim(),
-      from_date: fromDate.trim(),
+      from_date: trimmedDate,
       duration: duration.trim(),
       adults: Number(adults),
       children: Number(children),
@@ -356,21 +405,35 @@ export const CrmLeadForm: React.FC<CrmLeadFormProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
           <div>
             <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-              Destination
+              Destination <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <input
-                type="text"
-                readOnly
-                value={destination}
-                className="w-full px-3 h-10.5 bg-gray-100 border border-gray-300 rounded-xl text-xs sm:text-sm text-[#0B3996] font-bold outline-none cursor-not-allowed"
-              />
+              {isDestinationSelectable ? (
+                <select
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  className="w-full px-3 h-10.5 bg-gray-50 border border-gray-300 rounded-xl text-xs sm:text-sm text-gray-900 focus:bg-white focus:border-[#0B3996] focus:ring-2 focus:ring-[#0B3996]/20 transition-all outline-none font-medium cursor-pointer"
+                >
+                  {DESTINATION_OPTIONS.map((dest) => (
+                    <option key={dest} value={dest}>
+                      {dest}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  readOnly
+                  value={destination}
+                  className="w-full px-3 h-10.5 bg-gray-100 border border-gray-300 rounded-xl text-xs sm:text-sm text-[#0B3996] font-bold outline-none cursor-not-allowed"
+                />
+              )}
             </div>
           </div>
 
           <div>
             <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-              Duration
+              Duration <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
@@ -381,7 +444,7 @@ export const CrmLeadForm: React.FC<CrmLeadFormProps> = ({
                 onChange={(e) => setDuration(e.target.value)}
                 className="w-full pl-8 pr-3 h-10.5 bg-gray-50 border border-gray-300 rounded-xl text-xs sm:text-sm text-gray-900 focus:bg-white focus:border-[#0B3996] focus:ring-2 focus:ring-[#0B3996]/20 transition-all outline-none font-medium cursor-pointer"
               >
-                {durations.map((dur) => (
+                {activeDurations.map((dur) => (
                   <option key={dur} value={dur}>
                     {dur}
                   </option>
@@ -395,7 +458,7 @@ export const CrmLeadForm: React.FC<CrmLeadFormProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
           <div>
             <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">
-              Travel Date
+              Travel Date <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
@@ -403,6 +466,7 @@ export const CrmLeadForm: React.FC<CrmLeadFormProps> = ({
               </div>
               <input
                 type="date"
+                required
                 min={minDateString}
                 value={fromDate}
                 onChange={(e) => setFromDate(e.target.value)}
