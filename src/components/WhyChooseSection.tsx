@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { IndianRupee, Award, Clock, Compass, ShieldCheck, UserCheck } from 'lucide-react';
 

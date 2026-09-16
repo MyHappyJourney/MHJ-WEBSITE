@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { ArrowRight, Phone, Sparkles, Star } from 'lucide-react';
 import { PHONE_NUMBER, DISPLAY_PHONE } from '../data/tourData';

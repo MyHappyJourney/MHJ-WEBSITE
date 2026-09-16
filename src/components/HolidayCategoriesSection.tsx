@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { Heart, Users, Briefcase, Crown, Mountain, Compass, ArrowRight, X } from 'lucide-react';
 import { DOMESTIC_DESTINATIONS, DestinationCardItem } from '../data/destinations';

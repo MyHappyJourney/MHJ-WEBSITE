@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Star, ArrowRight } from 'lucide-react';
 import { ALL_REVIEWS } from '../data/reviewsData';

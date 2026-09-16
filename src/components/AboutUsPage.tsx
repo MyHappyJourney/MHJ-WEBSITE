@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Users, Shield, Handshake, Award, ArrowRight, Check, Star } from 'lucide-react';
 import { WHATSAPP_NUMBER } from '../data/tourData';

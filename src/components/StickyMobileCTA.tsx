@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Phone, Compass } from 'lucide-react';
 import { PHONE_NUMBER } from '../data/tourData';

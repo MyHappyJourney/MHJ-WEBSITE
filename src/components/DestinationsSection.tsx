@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { ArrowRight, Compass } from 'lucide-react';
 import { DOMESTIC_DESTINATIONS } from '../data/destinations';

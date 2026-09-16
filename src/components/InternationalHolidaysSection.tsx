@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Globe } from 'lucide-react';
 import { INTERNATIONAL_DESTINATIONS, InternationalDestinationItem } from '../data/destinations';

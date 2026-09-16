@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo } from 'react';
 import { ArrowRight, MapPin, Sparkles, Phone } from 'lucide-react';
 import { DOMESTIC_DESTINATIONS, DestinationCardItem } from '../data/destinations';

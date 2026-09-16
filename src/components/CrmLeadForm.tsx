@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import {
   User,
@@ -23,7 +25,7 @@ import {
   DESTINATION_OPTIONS,
 } from '../constants/crm';
 import { WHATSAPP_NUMBER } from '../data/tourData';
-import { WhatsAppIcon } from '../pages/kerala/components/WhatsAppIcon';
+import { WhatsAppIcon } from './WhatsAppIcon';
 
 export interface CrmLeadFormProps {
   destination: string;

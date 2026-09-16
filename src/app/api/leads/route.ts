@@ -1,23 +1,6 @@
-import type { IncomingMessage, ServerResponse } from 'http';
+import { NextRequest, NextResponse } from 'next/server';
 
-interface ExtendedRequest extends IncomingMessage {
-  body?: any;
-  query?: Record<string, string | string[]>;
-  method?: string;
-  headers: Record<string, string | string[] | undefined>;
-}
-
-interface ExtendedResponse extends ServerResponse {
-  status: (code: number) => ExtendedResponse;
-  json: (data: any) => void;
-  send: (body: any) => void;
-  setHeader: (name: string, value: string | number | readonly string[]) => this;
-}
-
-/**
- * Normalizes Indian mobile phone numbers into a clean 10-digit string.
- */
-export function normalizeIndianPhone(rawPhone: string): string {
+const normalizeIndianPhone = (rawPhone: string): string => {
   const digits = rawPhone.replace(/\D/g, '');
   if (digits.length === 12 && digits.startsWith('91')) {
     return digits.slice(2);
@@ -29,47 +12,11 @@ export function normalizeIndianPhone(rawPhone: string): string {
     return digits.slice(-10);
   }
   return digits;
-}
+};
 
-/**
- * Vercel Serverless Function: POST /api/leads
- * Securely forwards lead submissions to MyHappyJourney CRM.
- * Authentication is provided via the X-API-Key HTTP header.
- */
-export default async function handler(req: ExtendedRequest, res: ExtendedResponse) {
-  // 1. Method verification: POST only (reject GET and others with 405)
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
-    return res.status(405).json({
-      ok: false,
-      error: 'method_not_allowed',
-      message: 'Method Not Allowed. Only POST requests are accepted.',
-    });
-  }
-
+async function handleLeadSubmission(req: NextRequest) {
   try {
-    // 2. Parse request body
-    let body = req.body;
-    if (typeof body === 'string') {
-      try {
-        body = JSON.parse(body);
-      } catch {
-        return res.status(400).json({
-          ok: false,
-          error: 'invalid_body',
-          message: 'Malformed JSON in request body.',
-        });
-      }
-    }
-
-    if (!body || typeof body !== 'object') {
-      return res.status(400).json({
-        ok: false,
-        error: 'invalid_body',
-        message: 'Request body must be a valid JSON object.',
-      });
-    }
-
+    const body = await req.json().catch(() => ({}));
     const {
       name,
       fullName,
@@ -87,7 +34,6 @@ export default async function handler(req: ExtendedRequest, res: ExtendedRespons
       budget,
     } = body;
 
-    // 3. Extract and normalize fields
     const rawName = typeof name === 'string' && name.trim() ? name.trim() : (typeof fullName === 'string' ? fullName.trim() : '');
     const rawEmail = typeof email === 'string' ? email.trim() : '';
     const rawPhoneStr = typeof phone === 'string' ? phone : (typeof phoneNumber === 'string' ? phoneNumber : (phone ? String(phone) : ''));
@@ -102,7 +48,6 @@ export default async function handler(req: ExtendedRequest, res: ExtendedRespons
     const childrenNum = typeof children === 'number' ? children : (children !== undefined && children !== '' && children !== null ? Number(children) : 0);
     const rawBudget = typeof budget === 'string' ? budget.trim() : '';
 
-    // 4. Validation
     const validationErrors: Record<string, string> = {};
 
     if (!rawName || rawName.length < 2 || rawName.length > 100) {
@@ -144,15 +89,17 @@ export default async function handler(req: ExtendedRequest, res: ExtendedRespons
     }
 
     if (Object.keys(validationErrors).length > 0) {
-      return res.status(400).json({
-        ok: false,
-        error: 'validation_failed',
-        message: 'Please complete all required fields.',
-        fields: validationErrors,
-      });
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'validation_failed',
+          message: 'Please complete all required fields.',
+          fields: validationErrors,
+        },
+        { status: 400 }
+      );
     }
 
-    // 5. Construct Extended CRM Payload
     const crmPayload = {
       name: rawName,
       email: rawEmail,
@@ -166,20 +113,11 @@ export default async function handler(req: ExtendedRequest, res: ExtendedRespons
       budget: rawBudget,
     };
 
-    // 6. Read Server Environment Variables
     const crmUrl =
       process.env.CRM_LEAD_API_URL ||
       'https://www.myhappyjourney.co.in/controller/external_website_lead/external_lead_receiver.php';
     const crmApiKey = process.env.CRM_LEAD_API_KEY || '';
 
-    if (!crmApiKey) {
-      console.error('[CRM Error] CRM_LEAD_API_KEY is not set in environment variables!');
-    }
-
-    console.log('[CRM] Request received');
-    console.log('[CRM] Sending lead to CRM');
-
-    // 7. Forward to CRM with 10-second timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
@@ -196,12 +134,14 @@ export default async function handler(req: ExtendedRequest, res: ExtendedRespons
       });
     } catch (fetchErr: any) {
       clearTimeout(timeoutId);
-      console.error('[CRM] Network or timeout failure during CRM request');
-      return res.status(502).json({
-        ok: false,
-        error: 'network_error',
-        message: 'Unable to submit enquiry to CRM right now. Please try again or contact us via WhatsApp.',
-      });
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'network_error',
+          message: "Unable to submit enquiry to CRM right now. Please try again or contact us via WhatsApp.",
+        },
+        { status: 502 }
+      );
     } finally {
       clearTimeout(timeoutId);
     }
@@ -215,48 +155,58 @@ export default async function handler(req: ExtendedRequest, res: ExtendedRespons
       crmResult = null;
     }
 
-    console.log('[CRM] CRM response status:', crmStatus);
-    console.log('[CRM] CRM response ok:', crmResult?.ok === true);
-
-    // 8. Strict Success Check: HTTP 200 AND ok === true
     if (crmStatus === 200 && crmResult && crmResult.ok === true) {
-      return res.status(200).json({
+      return NextResponse.json({
         ok: true,
         enquiry_id: crmResult.enquiry_id || null,
         assigned_emp_id: crmResult.assigned_emp_id || null,
-        message: crmResult.message || 'Lead successfully saved in CRM.',
+        message: crmResult.message || 'Lead saved in CRM.',
       });
     }
 
     if (crmStatus === 422) {
-      return res.status(422).json({
-        ok: false,
-        error: 'validation_failed',
-        message: crmResult?.message || 'The submitted details could not be validated by CRM.',
-        fields: crmResult?.fields || undefined,
-      });
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'validation_failed',
+          message: crmResult?.message || 'The submitted details could not be validated by CRM.',
+          fields: crmResult?.fields || undefined,
+        },
+        { status: 422 }
+      );
     }
 
     if (crmStatus === 401) {
-      return res.status(500).json({
-        ok: false,
-        error: 'crm_auth_error',
-        message: 'Unable to submit enquiry to CRM. Please try again or contact us via WhatsApp.',
-      });
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'crm_auth_error',
+          message: "Unable to submit enquiry to CRM. Please try again or contact us via WhatsApp.",
+        },
+        { status: 500 }
+      );
     }
 
-    return res.status(500).json({
-      ok: false,
-      error: 'crm_error',
-      message: crmResult?.message || 'Unable to submit enquiry to CRM. Please try again or contact us via WhatsApp.',
-    });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'crm_error',
+        message: crmResult?.message || "Unable to submit enquiry to CRM. Please try again or contact us via WhatsApp.",
+      },
+      { status: 500 }
+    );
   } catch (err: any) {
-    console.error('[CRM Handler Exception]:', err?.message || err);
-    return res.status(500).json({
-      ok: false,
-      error: 'server_error',
-      message: 'Unable to submit enquiry to CRM. Please try again or contact us via WhatsApp.',
-    });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'server_error',
+        message: "Unable to submit enquiry to CRM. Please try again or contact us via WhatsApp.",
+      },
+      { status: 500 }
+    );
   }
 }
 
+export async function POST(req: NextRequest) {
+  return handleLeadSubmission(req);
+}

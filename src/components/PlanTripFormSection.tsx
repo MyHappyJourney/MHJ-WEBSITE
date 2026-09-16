@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 import { KERALA_DURATION_OPTIONS } from '../constants/crm';

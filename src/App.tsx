@@ -1,4 +1,7 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { TrustStrip } from './components/TrustStrip';
@@ -17,10 +20,10 @@ import { PackagesPage } from './components/PackagesPage';
 import { ReviewsPage } from './components/ReviewsPage';
 import { AboutUsPage } from './components/AboutUsPage';
 import { ContactUsPage } from './components/ContactUsPage';
-import { KeralaLandingPage } from './pages/kerala/KeralaLandingPage';
-import { KeralaHoneymoonLandingPage } from './pages/kerala-honeymoon/KeralaHoneymoonLandingPage';
-import { KeralaFamilyLandingPage } from './pages/kerala-family/KeralaFamilyLandingPage';
-import { KeralaSeniorLandingPage } from './pages/kerala-senior/KeralaSeniorLandingPage';
+import { KeralaLandingPage } from './landing-pages/kerala/KeralaLandingPage';
+import { KeralaHoneymoonLandingPage } from './landing-pages/kerala-honeymoon/KeralaHoneymoonLandingPage';
+import { KeralaFamilyLandingPage } from './landing-pages/kerala-family/KeralaFamilyLandingPage';
+import { KeralaSeniorLandingPage } from './landing-pages/kerala-senior/KeralaSeniorLandingPage';
 import { WhatsAppModal } from './components/WhatsAppModal';
 
 interface RouteMetadata {
@@ -77,37 +80,38 @@ const ROUTE_METADATA: Record<string, RouteMetadata> = {
 };
 
 export default function App() {
-  // Sync router path with window.location.pathname (/ | /kerala | /kerala-honeymoon | /kerala-family-tours | /kerala-senior-citizen-tours | /packages | /reviews | /about-us | /contact-us)
-  const [currentPath, setCurrentPath] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      const path = window.location.pathname;
-      if (path === '/kerala-senior-citizen-tours' || path.startsWith('/kerala-senior-citizen-tours')) {
-        return '/kerala-senior-citizen-tours';
-      }
-      if (path === '/kerala-family-tours' || path.startsWith('/kerala-family-tours')) {
-        return '/kerala-family-tours';
-      }
-      if (path === '/kerala-honeymoon' || path.startsWith('/kerala-honeymoon')) {
-        return '/kerala-honeymoon';
-      }
-      if (path === '/kerala' || path.startsWith('/kerala/')) {
-        return '/kerala';
-      }
-      if (path === '/contact-us' || path.startsWith('/contact-us/')) {
-        return '/contact-us';
-      }
-      if (path === '/about-us' || path.startsWith('/about-us/')) {
-        return '/about-us';
-      }
-      if (path === '/reviews' || path.startsWith('/reviews/')) {
-        return '/reviews';
-      }
-      if (path === '/packages' || path.startsWith('/packages/')) {
-        return '/packages';
-      }
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const getCleanPath = (path: string): string => {
+    if (path === '/kerala-senior-citizen-tours' || path.startsWith('/kerala-senior-citizen-tours')) {
+      return '/kerala-senior-citizen-tours';
+    }
+    if (path === '/kerala-family-tours' || path.startsWith('/kerala-family-tours')) {
+      return '/kerala-family-tours';
+    }
+    if (path === '/kerala-honeymoon' || path.startsWith('/kerala-honeymoon')) {
+      return '/kerala-honeymoon';
+    }
+    if (path === '/kerala' || path.startsWith('/kerala')) {
+      return '/kerala';
+    }
+    if (path === '/contact-us' || path.startsWith('/contact-us')) {
+      return '/contact-us';
+    }
+    if (path === '/about-us' || path.startsWith('/about-us')) {
+      return '/about-us';
+    }
+    if (path === '/reviews' || path.startsWith('/reviews')) {
+      return '/reviews';
+    }
+    if (path === '/packages' || path.startsWith('/packages')) {
+      return '/packages';
     }
     return '/';
-  });
+  };
+
+  const currentPath = getCleanPath(pathname || '/');
 
   // Global WhatsApp Chat Modal state
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState<boolean>(false);
@@ -130,10 +134,8 @@ export default function App() {
   useEffect(() => {
     const meta = ROUTE_METADATA[currentPath] || ROUTE_METADATA['/'];
 
-    // Update document title
     document.title = meta.title;
 
-    // Update or create meta name="description"
     let descTag = document.querySelector('meta[name="description"]');
     if (!descTag) {
       descTag = document.createElement('meta');
@@ -142,7 +144,6 @@ export default function App() {
     }
     descTag.setAttribute('content', meta.description);
 
-    // Update or create Open Graph title
     let ogTitle = document.querySelector('meta[property="og:title"]');
     if (!ogTitle) {
       ogTitle = document.createElement('meta');
@@ -151,7 +152,6 @@ export default function App() {
     }
     ogTitle.setAttribute('content', meta.title);
 
-    // Update or create Open Graph description
     let ogDesc = document.querySelector('meta[property="og:description"]');
     if (!ogDesc) {
       ogDesc = document.createElement('meta');
@@ -161,59 +161,11 @@ export default function App() {
     ogDesc.setAttribute('content', meta.description);
   }, [currentPath]);
 
-  // Handle browser back/forward buttons
-  useEffect(() => {
-    const handlePopState = () => {
-      const path = window.location.pathname;
-      if (path === '/kerala-senior-citizen-tours' || path.startsWith('/kerala-senior-citizen-tours')) {
-        setCurrentPath('/kerala-senior-citizen-tours');
-      } else if (path === '/kerala-family-tours' || path.startsWith('/kerala-family-tours')) {
-        setCurrentPath('/kerala-family-tours');
-      } else if (path === '/kerala-honeymoon' || path.startsWith('/kerala-honeymoon')) {
-        setCurrentPath('/kerala-honeymoon');
-      } else if (path === '/kerala' || path.startsWith('/kerala/')) {
-        setCurrentPath('/kerala');
-      } else if (path === '/contact-us' || path.startsWith('/contact-us/')) {
-        setCurrentPath('/contact-us');
-      } else if (path === '/about-us' || path.startsWith('/about-us/')) {
-        setCurrentPath('/about-us');
-      } else if (path === '/reviews' || path.startsWith('/reviews/')) {
-        setCurrentPath('/reviews');
-      } else if (path === '/packages' || path.startsWith('/packages/')) {
-        setCurrentPath('/packages');
-      } else {
-        setCurrentPath('/');
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
-
-  // Programmatic client navigation that pushes state to browser history
+  // Programmatic client navigation using Next.js router
   const navigateTo = (path: string) => {
-    let cleanPath = '/';
-    if (path === '/kerala-senior-citizen-tours' || path.startsWith('/kerala-senior-citizen-tours')) {
-      cleanPath = '/kerala-senior-citizen-tours';
-    } else if (path === '/kerala-family-tours' || path.startsWith('/kerala-family-tours')) {
-      cleanPath = '/kerala-family-tours';
-    } else if (path === '/kerala-honeymoon' || path.startsWith('/kerala-honeymoon')) {
-      cleanPath = '/kerala-honeymoon';
-    } else if (path === '/kerala' || path.startsWith('/kerala')) {
-      cleanPath = '/kerala';
-    } else if (path === '/contact-us' || path.startsWith('/contact-us')) {
-      cleanPath = '/contact-us';
-    } else if (path === '/about-us' || path.startsWith('/about-us')) {
-      cleanPath = '/about-us';
-    } else if (path === '/reviews' || path.startsWith('/reviews')) {
-      cleanPath = '/reviews';
-    } else if (path === '/packages' || path.startsWith('/packages')) {
-      cleanPath = '/packages';
-    }
-
-    if (cleanPath !== currentPath) {
-      window.history.pushState({}, '', cleanPath);
-      setCurrentPath(cleanPath);
+    const targetPath = getCleanPath(path);
+    router.push(targetPath);
+    if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
