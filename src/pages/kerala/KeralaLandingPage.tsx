@@ -37,14 +37,6 @@ export const KeralaLandingPage: React.FC<KeralaLandingPageProps> = ({ onBackToHo
     return () => clearTimeout(timer);
   }, []);
 
-  // Auto pop the lead form modal after 30 seconds
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsQuoteModalOpen(true);
-    }, 30000);
-    return () => clearTimeout(timer);
-  }, []);
-
   const openQuoteModal = (pkgId?: string) => {
     if (pkgId) {
       setQuotePackageId(pkgId);

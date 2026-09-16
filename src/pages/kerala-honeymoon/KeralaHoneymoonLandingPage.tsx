@@ -38,15 +38,6 @@ export const KeralaHoneymoonLandingPage: React.FC<KeralaHoneymoonLandingPageProp
     return () => clearTimeout(timer);
   }, []);
 
-  // Auto pop the lead form modal after exactly 30 seconds of page load
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsQuoteModalOpen(true);
-    }, 30000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   const openQuoteModal = (pkgId?: string) => {
     if (pkgId) {
       setQuotePackageId(pkgId);
