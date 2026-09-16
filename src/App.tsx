@@ -20,10 +20,10 @@ import { PackagesPage } from './components/PackagesPage';
 import { ReviewsPage } from './components/ReviewsPage';
 import { AboutUsPage } from './components/AboutUsPage';
 import { ContactUsPage } from './components/ContactUsPage';
-import { KeralaLandingPage } from './landing-pages/kerala';
-import { KeralaHoneymoonLandingPage } from './landing-pages/kerala-honeymoon';
-import { KeralaFamilyLandingPage } from './landing-pages/kerala-family';
-import { KeralaSeniorLandingPage } from './landing-pages/kerala-senior';
+import { KeralaLandingPage } from './landing-pages/kerala/KeralaLandingPage';
+import { KeralaHoneymoonLandingPage } from './landing-pages/kerala-honeymoon/KeralaHoneymoonLandingPage';
+import { KeralaFamilyLandingPage } from './landing-pages/kerala-family/KeralaFamilyLandingPage';
+import { KeralaSeniorLandingPage } from './landing-pages/kerala-senior/KeralaSeniorLandingPage';
 import { WhatsAppModal } from './components/WhatsAppModal';
 
 interface RouteMetadata {
