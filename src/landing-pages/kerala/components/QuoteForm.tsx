@@ -34,3 +34,5 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({ preselectedPackageId }) =>
 };
 
 // synchronized export
+
+export default QuoteForm;

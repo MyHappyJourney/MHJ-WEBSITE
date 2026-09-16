@@ -20,3 +20,5 @@ export const WhatsAppIcon: React.FC<WhatsAppIconProps> = ({ className = "w-4 h-4
 };
 
 // synchronized export
+
+export default WhatsAppIcon;

@@ -71,3 +71,5 @@ export const FAQ: React.FC = () => {
 };
 
 // synchronized export
+
+export default FAQ;

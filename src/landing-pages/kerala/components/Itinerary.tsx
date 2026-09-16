@@ -100,3 +100,5 @@ export const WhyKerala: React.FC = () => {
 export const Itinerary = WhyKerala;
 
 // synchronized export
+
+export default WhyKerala;

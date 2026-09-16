@@ -158,3 +158,5 @@ export const ReadyToExploreBanner: React.FC<ReadyToExploreBannerProps> = ({ onQu
 };
 
 // synchronized export
+
+export default ReadyToExploreBanner;

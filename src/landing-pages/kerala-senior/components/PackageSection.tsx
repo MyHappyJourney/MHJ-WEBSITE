@@ -222,3 +222,5 @@ export const PackageSection: React.FC<PackageSectionProps> = ({ onViewDetails, o
 };
 
 // synchronized export
+
+export default PackageSection;

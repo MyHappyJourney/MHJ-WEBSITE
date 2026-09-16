@@ -159,3 +159,5 @@ export const PackageCard: React.FC<PackageCardProps> = ({ pkg, onViewDetails, on
 };
 
 // synchronized export
+
+export default PackageCard;

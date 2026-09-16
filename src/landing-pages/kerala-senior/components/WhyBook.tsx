@@ -61,3 +61,5 @@ export const WhyBook: React.FC = () => {
 };
 
 // synchronized export
+
+export default WhyBook;

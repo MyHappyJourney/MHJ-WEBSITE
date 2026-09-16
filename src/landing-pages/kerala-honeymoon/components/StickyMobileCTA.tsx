@@ -54,3 +54,5 @@ export const StickyMobileCTA: React.FC<StickyMobileCTAProps> = ({ onQuoteClick }
 };
 
 // synchronized export
+
+export default StickyMobileCTA;

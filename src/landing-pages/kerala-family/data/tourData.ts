@@ -495,6 +495,8 @@ export const TRAVEL_EXPERIENCES: TravelExperience[] = [
   }
 ];
 
-export default PACKAGES;
+
 
 // synchronized export
+
+export default PACKAGES;

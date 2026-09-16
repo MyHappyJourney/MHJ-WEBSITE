@@ -242,3 +242,5 @@ export const Header: React.FC<HeaderProps> = ({ onQuoteClick, onPackageSelect, o
 };
 
 // synchronized export
+
+export default Header;

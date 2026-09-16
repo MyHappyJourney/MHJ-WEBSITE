@@ -50,3 +50,5 @@ export const GroupDiscountBanner: React.FC = () => {
 };
 
 // synchronized export
+
+export default GroupDiscountBanner;

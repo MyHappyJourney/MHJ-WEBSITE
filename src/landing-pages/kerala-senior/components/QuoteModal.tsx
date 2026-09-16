@@ -72,3 +72,5 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({
 };
 
 // synchronized export
+
+export default QuoteModal;

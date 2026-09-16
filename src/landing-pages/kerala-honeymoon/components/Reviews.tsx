@@ -202,3 +202,5 @@ export const Reviews: React.FC = () => {
 };
 
 // synchronized export
+
+export default Reviews;

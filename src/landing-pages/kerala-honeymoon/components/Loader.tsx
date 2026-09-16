@@ -37,3 +37,5 @@ export const Loader: React.FC<LoaderProps> = ({
 };
 
 // synchronized export
+
+export default Loader;

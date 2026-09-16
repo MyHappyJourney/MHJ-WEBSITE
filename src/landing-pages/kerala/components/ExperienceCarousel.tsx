@@ -215,3 +215,5 @@ export const ExperienceCarousel: React.FC<ExperienceCarouselProps> = ({ onQuoteC
 };
 
 // synchronized export
+
+export default ExperienceCarousel;

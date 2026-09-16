@@ -123,3 +123,5 @@ export const Footer: React.FC<FooterProps> = ({ onQuoteClick }) => {
 };
 
 // synchronized export
+
+export default Footer;

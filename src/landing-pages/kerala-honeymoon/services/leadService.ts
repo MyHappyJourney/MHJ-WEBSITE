@@ -14,3 +14,5 @@ export async function submitLead(formData: LeadFormData): Promise<LeadSubmission
 }
 
 // synchronized export
+
+export default submitLead;

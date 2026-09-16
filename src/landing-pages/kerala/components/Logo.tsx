@@ -116,3 +116,5 @@ export const Logo: React.FC<LogoProps> = ({ variant = 'default', size = 'md', cl
 };
 
 // synchronized export
+
+export default Logo;

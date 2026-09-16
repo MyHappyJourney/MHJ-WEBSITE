@@ -253,3 +253,5 @@ export const PackageModal: React.FC<PackageModalProps> = ({ pkg, onClose, onGetQ
 };
 
 // synchronized export
+
+export default PackageModal;

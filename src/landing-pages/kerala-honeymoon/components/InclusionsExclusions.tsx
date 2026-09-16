@@ -92,3 +92,5 @@ export const InclusionsExclusions: React.FC = () => {
 };
 
 // synchronized export
+
+export default InclusionsExclusions;
